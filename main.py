@@ -20,6 +20,8 @@ def main():
     for player in players:
         if players[player].name == 'Dealer': continue
         bet(player)
+    for player in players:
+        players[player].hand = []
     deal()
     clear_scr()
     for player in players:
@@ -33,7 +35,7 @@ def main():
             if choice.lower() == 's':
                 break
             elif choice.lower() == 'h':
-                hit(player)
+                hit(player, True)
                 continue
             else:
                 print("Not a valid option.")
@@ -41,7 +43,7 @@ def main():
     reveal('dealer')
     while True:
         if chk_score('dealer') < 17:
-            hit('dealer')
+            hit('dealer', False)
         else:
             break
     d_score = chk_score('dealer')
@@ -55,7 +57,7 @@ def main():
             if not players[player].state: continue
             if players[player].state: players[player].result = 'dbust'
     for player in players:
-        if players[player].state == False and players[player].name != 'Dealer': continue
+        if not players[player].state or players[player].name == 'Dealer': continue
         end_count(player, d_score, d_bust)
     if not d_bust:
         for player in players:
@@ -170,11 +172,11 @@ def display_hand(player, hidden:bool):
             hand.append("??? of ???")
     print((str(players[player].name) + ' - ' +  ' and '.join(hand)) + (("  =  " + str(chk_score(player))) if not hidden or  players[player].name != 'Dealer' else "  =  " + str(sum([players[player].hand[i][0] for i in range(len(players[player].hand) - 1)]))))           
         
-def hit(player):
+def hit(player, hide):
     card = choice(deck)
     deck.remove(card)
     players[player].hand.append(card)
-    display_hand(player, True)
+    display_hand(player, hide)
 
 def reveal(dealer):
     display_hand(dealer, False)
