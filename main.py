@@ -17,17 +17,18 @@ class Player:
         self.result = result
 
 def main():
-    deal()
     for player in players:
         if players[player].name == 'Dealer': continue
         bet(player)
+    deal()
     clear_scr()
     for player in players:
         display_hand(player, True)
     for player in players:
-        if players[player].state == False : continue
+        if not players[player].state: continue
         if players[player].name == 'Dealer': continue
-        while players[player].state:
+        while True:
+            if not players[player].state: break
             choice = input(players[player].name + "[H]it/[S]tand>")
             if choice.lower() == 's':
                 break
@@ -44,31 +45,39 @@ def main():
         else:
             break
     d_score = chk_score('dealer')
+    d_bust = False
     if d_score > 21:
         print("Dealer bust!")
         players['dealer'].state = False
+        d_bust = True
+        for player in players:
+            if players[player].name == 'Dealer': continue
+            if not players[player].state: continue
+            if players[player].state: players[player].result = 'dbust'
     for player in players:
         if players[player].state == False and players[player].name != 'Dealer': continue
-        end_count(player, d_score)
-
-    for player in players:
-        if players[player].name == 'Dealer': continue
-        if players[player].result == 'lose' or not players[player].state: 
-            print(players[player].name + " lost their bet.")
-            players['dealer'].chips += players[player].bet
-            players[player].bet = 0
-            continue
-        if players[player].result == 'win':
-            prize = players[player].bet * 2
-            print(f"{players[player].name} beat the dealer. They won ${prize}.")
-            players[player].bet = 0
-            players[player].chips += prize
-            continue
-        if players[player].result == 'tie':
-            players[player].chips += players[player].bet
-            players[player].bet = 0
-            print(f"It's a tie! {players[player].name} got their bet back. (${players[player].bet})")
-            continue
+        end_count(player, d_score, d_bust)
+    if not d_bust:
+        for player in players:
+            if players[player].name == 'Dealer': continue
+            if players[player].result == 'lose' or not players[player].state: 
+                print(players[player].name + " lost their bet.")
+                players['dealer'].chips += players[player].bet
+                players[player].bet = 0
+                continue
+            if players[player].result == 'win':
+                prize = players[player].bet * 2
+                print(f"{players[player].name} beat the dealer. They won ${prize}.")
+                players[player].bet = 0
+                players[player].chips += prize
+                continue
+            if players[player].result == 'tie':
+                players[player].chips += players[player].bet
+                players[player].bet = 0
+                print(f"It's a tie! {players[player].name} got their bet back. (${players[player].bet})")
+                continue
+    else:
+        print("All players not busted win.")
     input("Press enter to continue...")
     for player in players:
         summary(players)
@@ -165,22 +174,22 @@ def hit(player):
     card = choice(deck)
     deck.remove(card)
     players[player].hand.append(card)
-    chk_score(player)
     display_hand(player, True)
 
 def reveal(dealer):
     display_hand(dealer, False)
 
-def end_count(player, dealer_score:int):
-    score = chk_score(player)
-    result = 'Null'
-    if score < dealer_score:
-        result = 'lose'
-    elif score > dealer_score:
-        result = 'win'
-    elif score == dealer_score:
-        result = 'tie'
-    players[player].result = result
+def end_count(player, dealer_score:int, dealer_bust:bool):
+    if not dealer_bust:
+        score = chk_score(player)
+        result = 'Null'
+        if score < dealer_score:
+            result = 'lose'
+        elif score > dealer_score:
+            result = 'win'
+        elif score == dealer_score:
+            result = 'tie'
+        players[player].result = result
 
 def chk_score(player):
     score = 0
@@ -199,8 +208,9 @@ def chk_score(player):
                 print(f"{players[player].name} busted!")
     return score
 
-def summary(players):
+def summary(players, dealer_bust:bool):
     clear_scr()
+    if dealer_bust: print("Dealer busted!\nAll players not busted win.")
     for player in players:
         if players[player].name == 'Dealer': continue
         if not players[player].state and players[player].result != 'blackjack':
@@ -211,6 +221,8 @@ def summary(players):
             print(f"{players[player].name} beat the dealer. They now have ${players[player].chips}.")
         elif players[player].result == 'blackjack':
             print(f"{players[player].name} got a natural and now has ${players[player].chips}")
+        elif players[player].result == 'dbust':
+            print(f"{players[player].name} now has ${players[player].chips}")
 
 def shuffle_deck():
     for i in suites:
