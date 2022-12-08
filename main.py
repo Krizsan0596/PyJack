@@ -73,14 +73,14 @@ def main():
                 continue
             if players[player].result == 'tie':
                 players[player].chips += players[player].bet
+                print(f"It's a tie! {players[player].name} got their bet back. (${players[player].bet}, has ${players[player].chips} in total)")
                 players[player].bet = 0
-                print(f"It's a tie! {players[player].name} got their bet back. (${players[player].bet})")
                 continue
     else:
         print("All players not busted win.")
     input("Press enter to continue...")
     for player in players:
-        summary(players)
+        summary(players, d_bust)
     left = []
     for player in players:
         if players[player].name == 'Dealer':
@@ -160,7 +160,7 @@ def deal():
 
 def display_hand(player, hidden:bool):
     hand = []
-    if player != 'dealer' or not hidden:
+    if not hidden or player != 'dealer':
         for i in players[player].hand:
             hand.append(str('Ace' if i[0] == 1 else ('King' if i[0] == 13 else ('Queen' if i[0] == 12 else ('Jack' if i[0] == 11 else i[0])))) + " of " + i[1])
     else:
@@ -168,7 +168,7 @@ def display_hand(player, hidden:bool):
         for i in d_hand:
             hand.append(str('Ace' if i[0] == 1 else ('King' if i[0] == 13 else ('Queen' if i[0] == 12 else ('Jack' if i[0] == 11 else i[0])))) + " of " + i[1])
             hand.append("??? of ???")
-    print((str(players[player].name) + ' - ' +  ' and '.join(hand)) + (("  =  " + str(chk_score(player))) if players[player].name != 'Dealer' or not hidden else "  =  " + str(sum([players[player].hand[i][0] for i in range(len(players[player].hand) - 1)]))))           
+    print((str(players[player].name) + ' - ' +  ' and '.join(hand)) + (("  =  " + str(chk_score(player))) if not hidden or  players[player].name != 'Dealer' else "  =  " + str(sum([players[player].hand[i][0] for i in range(len(players[player].hand) - 1)]))))           
         
 def hit(player):
     card = choice(deck)
@@ -183,7 +183,7 @@ def end_count(player, dealer_score:int, dealer_bust:bool):
     if not dealer_bust:
         score = chk_score(player)
         result = 'Null'
-        if score < dealer_score:
+        if score < dealer_score or not players[player].state:
             result = 'lose'
         elif score > dealer_score:
             result = 'win'
@@ -197,15 +197,18 @@ def chk_score(player):
     for i in players[player].hand:
         hand.append(10 if i[0] > 10 else (i[0] if i[0] != 1 else 11))
     score = sum(hand)
+    while True:
+        if score > 21:
+            if 11 in hand:
+                hand[hand.index(11)] = 1
+                score = sum(hand)
+            else:
+                players[player].status = False
+                if players[player].name != 'Dealer': 
+                    print(f"{players[player].name} busted!")
+                break
+        else: break
     players[player].score = score
-    if score > 21:
-        try:
-            hand.remove(11)
-            hand.append(1)
-        except ValueError:
-            players[player].status = False
-            if players[player].name != 'Dealer': 
-                print(f"{players[player].name} busted!")
     return score
 
 def summary(players, dealer_bust:bool):
