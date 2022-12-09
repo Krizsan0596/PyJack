@@ -144,6 +144,7 @@ def deal():
     for player in players:
         if chk_score(player) == 21:
             if players[player].name == 'Dealer':
+                print("Dealer has blackjack!")
                 for p in players:
                     if chk_score(p) != 21:
                         players[p].result = 'lose'
@@ -152,7 +153,7 @@ def deal():
             else:
                 if players['dealer'].score != 21:
                     prize = players[player].bet *1.5
-                    print(players[player].name + f" hit a blackjack! They won ${prize}.")
+                    print(players[player].name + f" has a blackjack! They won ${prize}.")
                     players[player].chips += prize
                     players[player].bet = 0
                     players[player].result = 'blackjack'
@@ -173,16 +174,18 @@ def display_hand(player, hidden:bool):
     print((str(players[player].name) + ' - ' +  ' and '.join(hand)) + (("  =  " + str(chk_score(player))) if not hidden or  players[player].name != 'Dealer' else "  =  " + str(sum([players[player].hand[i][0] for i in range(len(players[player].hand) - 1)]))))           
         
 def hit(player, hide):
-    card = choice(deck)
-    deck.remove(card)
-    players[player].hand.append(card)
-    display_hand(player, hide)
+    if players[player].state:
+        card = choice(deck)
+        deck.remove(card)
+        players[player].hand.append(card)
+        display_hand(player, hide)
+    else: pass
 
 def reveal(dealer):
     display_hand(dealer, False)
 
 def end_count(player, dealer_score:int, dealer_bust:bool):
-    if not dealer_bust:
+    if not dealer_bust and not players[player].result is None:
         score = chk_score(player)
         result = 'Null'
         if score < dealer_score or not players[player].state:
@@ -206,6 +209,7 @@ def chk_score(player):
                 score = sum(hand)
             else:
                 players[player].status = False
+                players[player].result = 'lose'
                 if players[player].name != 'Dealer': 
                     print(f"{players[player].name} busted!")
                 break
