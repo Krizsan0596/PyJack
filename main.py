@@ -207,7 +207,7 @@ def chk_score(player):
                 hand[hand.index(11)] = 1
                 score = sum(hand)
             else:
-                players[player].status = False
+                players[player].state = False
                 players[player].result = 'lose'
                 if players[player].name != 'Dealer': 
                     print(f"{players[player].name} busted!")
