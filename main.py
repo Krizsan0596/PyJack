@@ -29,8 +29,7 @@ def main():
     for player in players:
         if not players[player].state: continue
         if players[player].name == 'Dealer': continue
-        while True:
-            if not players[player].state: break
+        while players[player].state:
             choice = input(players[player].name + "[H]it/[S]tand>")
             if choice.lower() == 's':
                 break
@@ -190,7 +189,7 @@ def end_count(player, dealer_score:int, dealer_bust:bool):
         result = 'Null'
         if score < dealer_score or not players[player].state:
             result = 'lose'
-        elif score > dealer_score:
+        elif score > dealer_score and score <= 21:
             result = 'win'
         elif score == dealer_score:
             result = 'tie'
