@@ -30,12 +30,18 @@ def main():
         if not players[player].state: continue
         if players[player].name == 'Dealer': continue
         while players[player].state:
-            choice = input(players[player].name + "[H]it/[S]tand>")
+            choice = input(players[player].name + "[H]it/[S]tand/[D]ouble down>")
             if choice.lower() == 's':
                 break
             elif choice.lower() == 'h':
                 hit(player, True)
                 continue
+            elif choice.lower() == 'd':
+                if players[player].chips >= players[player].bet:
+                    players[player].chips -= players[player].bet
+                    players[player].bet += players[player].bet
+                else:
+                    print("You don't have enough money.")
             else:
                 print("Not a valid option.")
                 continue
